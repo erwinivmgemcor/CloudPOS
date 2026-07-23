@@ -1,80 +1,70 @@
 // ============================================
 // CloudPOS API Module
-// Handles all communication with Google Apps Script
 // ============================================
 
 const API_CONFIG = {
   // Replace with your deployed Google Apps Script Web App URL
   BASE_URL: 'https://script.google.com/macros/s/AKfycbxO-PIlLjzEEq_RnHYi6mW1bYS2vJIyhVnE5C7nyfA6UiX3k9yYV34gVKTUANka8ElgGA/exec',
-  
-  // Request timeout in milliseconds
   TIMEOUT: 30000,
-  
-  // Retry attempts for failed requests
   RETRY_ATTEMPTS: 2
 };
 
 /**
- * Generic fetch wrapper with error handling, timeout, and retries
- * @param {string} action - The API action to call
- * @param {Object} payload - Data to send
- * @returns {Promise<Object>} - API response
+ * Generic fetch wrapper with error handling
  */
 async function apiCall(action, payload = {}) {
   const url = API_CONFIG.BASE_URL;
-  const data = { action, ...payload };
   
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-    // Note: mode: 'cors' is default for cross-origin
-  };
+  // Use URL parameters for GET-like requests to avoid CORS preflight issues
+  const params = new URLSearchParams({
+    action: action,
+    data: JSON.stringify(payload)
+  });
   
-  let lastError;
+  // For simple actions, use GET to avoid CORS preflight
+  const useGet = ['test', 'getDashboard', 'getProducts'].includes(action);
   
-  for (let attempt = 1; attempt <= API_CONFIG.RETRY_ATTEMPTS; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
-      
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
+  try {
+    let response;
+    
+    if (useGet) {
+      // GET request - no preflight needed
+      response = await fetch(`${url}?${params.toString()}`, {
+        method: 'GET',
+        redirect: 'follow'
       });
+    } else {
+      // POST request for actions that modify data
+      const formData = new URLSearchParams();
+      formData.append('action', action);
+      formData.append('data', JSON.stringify(payload));
       
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      
-      if (result.status === 'error') {
-        throw new Error(result.message || 'API Error');
-      }
-      
-      return result;
-      
-    } catch (error) {
-      lastError = error;
-      
-      // Don't retry on client errors (4xx)
-      if (error.message && error.message.includes('HTTP 4')) {
-        break;
-      }
-      
-      // Wait before retry (exponential backoff)
-      if (attempt < API_CONFIG.RETRY_ATTEMPTS) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-      }
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        redirect: 'follow'
+      });
     }
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.status === 'error') {
+      throw new Error(result.message || 'API Error');
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
   }
-  
-  throw lastError;
 }
 
 /**
@@ -82,7 +72,6 @@ async function apiCall(action, payload = {}) {
  */
 async function testConnection() {
   try {
-    // Simple GET request for testing
     const response = await fetch(`${API_CONFIG.BASE_URL}?action=test`);
     return await response.json();
   } catch (error) {
