@@ -5,7 +5,7 @@
 
 const API_CONFIG = {
   // Replace with your deployed Google Apps Script Web App URL
-  BASE_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbxO-PIlLjzEEq_RnHYi6mW1bYS2vJIyhVnE5C7nyfA6UiX3k9yYV34gVKTUANka8ElgGA/exec',
   
   // Request timeout in milliseconds
   TIMEOUT: 30000,
