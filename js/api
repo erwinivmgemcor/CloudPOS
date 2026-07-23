@@ -1,0 +1,94 @@
+// ============================================
+// CloudPOS API Module
+// Handles all communication with Google Apps Script
+// ============================================
+
+const API_CONFIG = {
+  // Replace with your deployed Google Apps Script Web App URL
+  BASE_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+  
+  // Request timeout in milliseconds
+  TIMEOUT: 30000,
+  
+  // Retry attempts for failed requests
+  RETRY_ATTEMPTS: 2
+};
+
+/**
+ * Generic fetch wrapper with error handling, timeout, and retries
+ * @param {string} action - The API action to call
+ * @param {Object} payload - Data to send
+ * @returns {Promise<Object>} - API response
+ */
+async function apiCall(action, payload = {}) {
+  const url = API_CONFIG.BASE_URL;
+  const data = { action, ...payload };
+  
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+    // Note: mode: 'cors' is default for cross-origin
+  };
+  
+  let lastError;
+  
+  for (let attempt = 1; attempt <= API_CONFIG.RETRY_ATTEMPTS; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.status === 'error') {
+        throw new Error(result.message || 'API Error');
+      }
+      
+      return result;
+      
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry on client errors (4xx)
+      if (error.message && error.message.includes('HTTP 4')) {
+        break;
+      }
+      
+      // Wait before retry (exponential backoff)
+      if (attempt < API_CONFIG.RETRY_ATTEMPTS) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+/**
+ * Test API connection
+ */
+async function testConnection() {
+  try {
+    // Simple GET request for testing
+    const response = await fetch(`${API_CONFIG.BASE_URL}?action=test`);
+    return await response.json();
+  } catch (error) {
+    console.error('Connection test failed:', error);
+    return { status: 'error', message: 'Cannot connect to API' };
+  }
+}
+
+export { apiCall, testConnection, API_CONFIG };
