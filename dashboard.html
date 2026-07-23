@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | CloudPOS</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading Dashboard...</p>
+  </div>
+
+  <!-- Mobile Sidebar Toggle -->
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-store"></i>
+        </div>
+        <span class="sidebar-brand">CloudPOS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="dashboard.html" class="nav-item active">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="pos.html" class="nav-item">
+            <i class="fas fa-cash-register"></i>
+            <span>POS</span>
+          </a>
+          <a href="sales.html" class="nav-item">
+            <i class="fas fa-receipt"></i>
+            <span>Sales</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="products.html" class="nav-item">
+            <i class="fas fa-box"></i>
+            <span>Products</span>
+          </a>
+          <a href="inventory.html" class="nav-item">
+            <i class="fas fa-warehouse"></i>
+            <span>Inventory</span>
+          </a>
+          <a href="purchase-orders.html" class="nav-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Purchase Orders</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">People</div>
+          <a href="customers.html" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Customers</span>
+          </a>
+          <a href="suppliers.html" class="nav-item">
+            <i class="fas fa-truck"></i>
+            <span>Suppliers</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+          <a href="expenses.html" class="nav-item">
+            <i class="fas fa-wallet"></i>
+            <span>Expenses</span>
+          </a>
+          <a href="reports.html" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            <span>Reports</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="users.html" class="nav-item">
+            <i class="fas fa-user-shield"></i>
+            <span>Users</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="logout()">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name" data-user-name>Loading...</div>
+            <div class="user-role" data-user-role>Loading...</div>
+          </div>
+          <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="page-title">
+          <h1>Dashboard</h1>
+          <p>Welcome back! Here's what's happening today.</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="btn-icon" onclick="refreshDashboard()" title="Refresh">
+            <i class="fas fa-sync-alt" id="refreshIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="statsGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Charts & Alerts Grid -->
+      <div class="dashboard-grid">
+        <!-- Sales Chart -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 0.5rem;"></i>
+              Sales Overview
+            </h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-icon" onclick="switchChart('weekly')" id="btnWeekly" style="font-size: 0.75rem; width: auto; padding: 0.25rem 0.75rem;">
+                Weekly
+              </button>
+              <button class="btn-icon" onclick="switchChart('monthly')" id="btnMonthly" style="font-size: 0.75rem; width: auto; padding: 0.25rem 0.75rem; opacity: 0.6;">
+                Monthly
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-bell" style="color: var(--warning); margin-right: 0.5rem;"></i>
+              Alerts
+            </h3>
+          </div>
+          <div class="card-body" id="alertsContainer">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="dashboard-grid">
+        <!-- Top Selling -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-trophy" style="color: #f59e0b; margin-right: 0.5rem;"></i>
+              Top Selling Products
+            </h3>
+            <a href="sales.html" style="font-size: 0.875rem; font-weight: 600;">View All</a>
+          </div>
+          <div class="card-body" id="topProductsContainer">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Slow Moving -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-turtle" style="color: var(--danger); margin-right: 0.5rem;"></i>
+              Slow Moving Products
+            </h3>
+          </div>
+          <div class="card-body" id="slowProductsContainer">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+  
+  <script>
+    // Hide loading screen
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) {
+          loader.classList.add('hidden');
+          setTimeout(() => loader.remove(), 300);
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
