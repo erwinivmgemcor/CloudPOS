@@ -1,17 +1,15 @@
 // ============================================
 // CloudPOS API Module
-// Uses GET requests exclusively to avoid CORS issues with Google Apps Script
+// GET-ONLY approach to avoid CORS issues
 // ============================================
 
 const API_CONFIG = {
-  // Replace with your deployed Google Apps Script Web App URL
   BASE_URL: 'https://script.google.com/macros/s/AKfycbxO-PIIjzEEq_RnHYi6mW1bYS2vJlyhVnE5C7nyfA6UiX3k9yYV34gVKTUANka8EIgGA/exec',
   TIMEOUT: 30000
 };
 
 /**
- * Generic API call using GET with URL parameters
- * This avoids CORS issues with POST redirects
+ * API call using GET only (avoids CORS preflight issues)
  */
 async function apiCall(action, payload = {}) {
   const url = API_CONFIG.BASE_URL;
@@ -23,7 +21,12 @@ async function apiCall(action, payload = {}) {
   // Add all payload data as query parameters
   for (const key in payload) {
     if (payload[key] !== undefined && payload[key] !== null) {
-      params.append(key, payload[key]);
+      // Handle arrays/objects by JSON stringifying
+      if (typeof payload[key] === 'object') {
+        params.append(key, JSON.stringify(payload[key]));
+      } else {
+        params.append(key, payload[key]);
+      }
     }
   }
   
