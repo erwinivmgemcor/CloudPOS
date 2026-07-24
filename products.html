@@ -14,127 +14,258 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
 
-  <!-- Modal Fix Styles -->
+  <!-- Modern Product Modal Styles -->
   <style>
     #productModalOverlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
       z-index: 99999;
       align-items: center;
       justify-content: center;
       padding: 1rem;
+      animation: fadeIn 0.2s ease;
     }
     #productModalOverlay.active {
       display: flex !important;
     }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     #productModalBox {
       background: var(--bg-card);
       color: var(--text-primary);
-      border-radius: 16px;
+      border-radius: 20px;
       width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
+      max-width: 520px;
+      max-height: 92vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      animation: modalSlideIn 0.2s ease-out;
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.1);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
     }
-    @keyframes modalSlideIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
+
+    /* Header */
     #productModalHeader {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color);
+      padding: 1.5rem 1.75rem 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-body) 100%);
     }
     #productModalHeader h3 {
       margin: 0;
-      font-size: 1.125rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
+    #productModalHeader h3 i {
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .modal-close-btn {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+
+    /* Body */
     #productModalBody {
-      padding: 1.5rem;
+      padding: 1.25rem 1.75rem;
       overflow-y: auto;
       flex: 1;
     }
-    #productModalBody label {
+
+    .modal-section {
+      margin-bottom: 1.25rem;
+    }
+    .modal-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .modal-section-title i {
+      font-size: 0.875rem;
+    }
+
+    .modal-form-group {
+      margin-bottom: 0.875rem;
+    }
+    .modal-form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .modal-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.875rem;
+    }
+
+    .modal-form-group label {
       display: block;
       font-size: 0.8125rem;
       font-weight: 600;
       margin-bottom: 0.375rem;
       color: var(--text-secondary);
     }
-    #productModalBody input,
-    #productModalBody select {
+    .modal-form-group label .required {
+      color: #dc2626;
+      margin-left: 2px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      pointer-events: none;
+    }
+    .input-wrapper input.has-icon,
+    .input-wrapper select.has-icon {
+      padding-left: 2.5rem;
+    }
+
+    .modal-form-group input,
+    .modal-form-group select {
       width: 100%;
       padding: 0.625rem 0.875rem;
       border: 1.5px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--bg-body);
       color: var(--text-primary);
       font-size: 0.9375rem;
       box-sizing: border-box;
       font-family: inherit;
+      transition: all 0.2s;
     }
-    #productModalBody input:focus,
-    #productModalBody select:focus {
+    .modal-form-group input:focus,
+    .modal-form-group select:focus {
       outline: none;
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
+    .modal-form-group input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    .suggest-btn {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.25rem 0.625rem;
+      border-radius: 6px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .suggest-btn:hover {
+      opacity: 0.85;
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .stock-hint {
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .stock-hint i {
+      font-size: 0.625rem;
+    }
+
+    /* Footer */
     #productModalFooter {
-      padding: 1rem 1.5rem;
+      padding: 1rem 1.75rem;
       border-top: 1px solid var(--border-color);
       display: flex;
       gap: 0.75rem;
       flex-shrink: 0;
+      background: var(--bg-body);
     }
     #productModalFooter button {
-      padding: 0.625rem;
-      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
       font-size: 0.9375rem;
       border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
-    #productModalFooter .btn-cancel {
+    .btn-cancel {
       flex: 1;
-      background: var(--bg-body);
-      color: var(--text-primary);
-      border: 1.5px solid var(--border-color);
-    }
-    #productModalFooter .btn-save {
-      flex: 2;
-      background: var(--primary);
-      color: white;
-    }
-    #productModalFooter .btn-save:hover {
-      opacity: 0.9;
-    }
-    .modal-close-btn {
-      background: none;
-      border: none;
+      background: transparent;
       color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 1.25rem;
-      padding: 0.25rem;
+      border: 1.5px solid var(--border-color) !important;
     }
-    .modal-close-btn:hover {
+    .btn-cancel:hover {
+      background: var(--bg-card);
       color: var(--text-primary);
+      border-color: var(--text-secondary) !important;
     }
-    .modal-form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.875rem;
-      margin-bottom: 1rem;
+    .btn-save {
+      flex: 2;
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
-    .modal-form-group {
-      margin-bottom: 1rem;
+    .btn-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    .btn-save:active {
+      transform: translateY(0);
     }
   </style>
 <base target="_blank">
@@ -254,85 +385,138 @@
     </main>
   </div>
 
-  <!-- Product Modal - OUTSIDE everything, fixed position, highest z-index -->
+  <!-- Product Modal -->
   <div id="productModalOverlay">
     <div id="productModalBox">
-      <!-- Modal Header -->
+      <!-- Header -->
       <div id="productModalHeader">
-        <h3 id="modalTitle">Add Product</h3>
+        <h3><i class="fas fa-cube"></i> <span id="modalTitle">Add Product</span></h3>
         <button class="modal-close-btn" onclick="closeProductModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
-      <!-- Modal Body -->
+      <!-- Body -->
       <div id="productModalBody">
         <form id="productForm" onsubmit="saveProduct(event)">
           <input type="hidden" id="productId">
 
-          <div class="modal-form-group">
-            <label>Product Name *</label>
-            <input type="text" id="productName" required>
-          </div>
+          <!-- Basic Info Section -->
+          <div class="modal-section">
+            <div class="modal-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>
 
-          <div class="modal-form-grid">
-            <div>
-              <label>Barcode</label>
-              <input type="text" id="productBarcode">
+            <div class="modal-form-group">
+              <label>Product Name <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-tag"></i>
+                <input type="text" id="productName" class="has-icon" placeholder="e.g. Coca Cola 1.5L" required>
+              </div>
             </div>
-            <div>
-              <label>SKU</label>
-              <input type="text" id="productSku">
-            </div>
-          </div>
 
-          <div class="modal-form-group">
-            <label>Category</label>
-            <input type="text" id="productCategory" list="categoryList">
-            <datalist id="categoryList"></datalist>
-          </div>
+            <div class="modal-form-grid">
+              <div class="modal-form-group">
+                <label>Barcode</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-barcode"></i>
+                  <input type="text" id="productBarcode" class="has-icon" placeholder="e.g. 123456789">
+                  <button type="button" class="suggest-btn" onclick="suggestBarcode()">Auto</button>
+                </div>
+              </div>
+              <div class="modal-form-group">
+                <label>SKU</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-fingerprint"></i>
+                  <input type="text" id="productSku" class="has-icon" placeholder="e.g. SKU-001">
+                  <button type="button" class="suggest-btn" onclick="suggestSKU()">Auto</button>
+                </div>
+              </div>
+            </div>
 
-          <div class="modal-form-grid">
-            <div>
-              <label>Buying Price *</label>
-              <input type="number" id="productBuyingPrice" step="0.01" required>
-            </div>
-            <div>
-              <label>Selling Price *</label>
-              <input type="number" id="productSellingPrice" step="0.01" required>
-            </div>
-          </div>
-
-          <div class="modal-form-grid">
-            <div>
-              <label>Stock *</label>
-              <input type="number" id="productStock" required>
-            </div>
-            <div>
-              <label>Min Stock</label>
-              <input type="number" id="productMinStock">
+            <div class="modal-form-group">
+              <label>Category</label>
+              <div class="input-wrapper">
+                <i class="fas fa-folder"></i>
+                <input type="text" id="productCategory" class="has-icon" list="categoryList" placeholder="e.g. Beverages, Food, Dairy">
+                <datalist id="categoryList"></datalist>
+              </div>
             </div>
           </div>
 
-          <div class="modal-form-group">
-            <label>Supplier</label>
-            <input type="text" id="productSupplier">
+          <!-- Pricing Section -->
+          <div class="modal-section">
+            <div class="modal-section-title"><i class="fas fa-peso-sign"></i> Pricing</div>
+
+            <div class="modal-form-grid">
+              <div class="modal-form-group">
+                <label>Buying Price <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-arrow-down"></i>
+                  <input type="number" id="productBuyingPrice" class="has-icon" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+              </div>
+              <div class="modal-form-group">
+                <label>Selling Price <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-arrow-up"></i>
+                  <input type="number" id="productSellingPrice" class="has-icon" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="modal-form-group">
-            <label>Status</label>
-            <select id="productStatus">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+          <!-- Stock Section -->
+          <div class="modal-section">
+            <div class="modal-section-title"><i class="fas fa-boxes-stacked"></i> Inventory</div>
+
+            <div class="modal-form-grid">
+              <div class="modal-form-group">
+                <label>Stock Quantity <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-warehouse"></i>
+                  <input type="number" id="productStock" class="has-icon" min="0" placeholder="0" required>
+                </div>
+              </div>
+              <div class="modal-form-group">
+                <label>Min Stock Level</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-bell"></i>
+                  <input type="number" id="productMinStock" class="has-icon" min="0" placeholder="10">
+                  <button type="button" class="suggest-btn" onclick="suggestMinStock()">Auto</button>
+                </div>
+                <div class="stock-hint"><i class="fas fa-lightbulb"></i> Alert when stock falls below this</div>
+              </div>
+            </div>
+
+            <div class="modal-form-group">
+              <label>Supplier</label>
+              <div class="input-wrapper">
+                <i class="fas fa-truck"></i>
+                <input type="text" id="productSupplier" class="has-icon" placeholder="e.g. Nestle Philippines">
+              </div>
+            </div>
+
+            <div class="modal-form-group">
+              <label>Status</label>
+              <div class="input-wrapper">
+                <i class="fas fa-toggle-on"></i>
+                <select id="productStatus" class="has-icon">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
           </div>
         </form>
       </div>
 
-      <!-- Modal Footer -->
+      <!-- Footer -->
       <div id="productModalFooter">
-        <button class="btn-cancel" onclick="closeProductModal()">Cancel</button>
-        <button class="btn-save" onclick="document.getElementById('productForm').dispatchEvent(new Event('submit'))">Save Product</button>
+        <button class="btn-cancel" onclick="closeProductModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn-save" onclick="document.getElementById('productForm').dispatchEvent(new Event('submit'))">
+          <i class="fas fa-check"></i> Save Product
+        </button>
       </div>
     </div>
   </div>
