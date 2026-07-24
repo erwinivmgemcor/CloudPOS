@@ -4,7 +4,7 @@
 // ============================================
 
 const API_CONFIG = {
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbx-nOCMUUconkngwPTzsmknB9Ds5Sn8IhU3Vft76aofw9xaa0yQCl9iqkR-6qFygOv3/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbxpEWHLm1KrdcjVdfIQ_1alweZNSTcktcs8sxNjGDoFaRv8egHOFKH1mJRAv4Nadfll4w/exec',
   TIMEOUT: 30000
 };
 
