@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers | CloudPOS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+
+  <!-- Customers Page Styles -->
+  <style>
+    /* Stats Cards */
+    .cust-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    .stat-icon.total { background: linear-gradient(135deg, #6366f1, #7c3aed); color: white; }
+    .stat-icon.active { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+    .stat-icon.vip { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .stat-icon.revenue { background: linear-gradient(135deg, #ec4899, #db2777); color: white; }
+    .stat-info h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin: 0 0 0.25rem;
+    }
+    .stat-info .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .filter-bar .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding-left: 2.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 0.875rem center;
+    }
+
+    /* Customers Table */
+    .cust-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .cust-table th {
+      padding: 0.875rem 1rem;
+      text-align: left;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-body);
+    }
+    .cust-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .cust-table tr:hover td { background: var(--bg-body); }
+
+    .customer-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .customer-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: white;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .customer-name { font-weight: 600; color: var(--text-primary); }
+    .customer-email { font-size: 0.75rem; color: var(--text-secondary); }
+
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .tier-badge.regular { background: #f3f4f6; color: #4b5563; }
+    .tier-badge.bronze { background: #fef3c7; color: #92400e; }
+    .tier-badge.silver { background: #e5e7eb; color: #374151; }
+    .tier-badge.gold { background: #fef9c3; color: #854d0e; }
+    .tier-badge.vip { background: #ede9fe; color: #5b21b6; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-badge.active { background: #dcfce7; color: #166534; }
+    .status-badge.inactive { background: #fee2e2; color: #991b1b; }
+
+    .action-btns {
+      display: flex;
+      gap: 0.375rem;
+      justify-content: flex-end;
+    }
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .action-btn.danger:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+    .page-info {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    .page-buttons {
+      display: flex;
+      gap: 0.25rem;
+    }
+    .page-btn {
+      padding: 0.5rem 0.875rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Customer Modal */
+    #customerModalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+    #customerModalOverlay.active { display: flex !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #customerModalBox {
+      background: var(--bg-card);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .cust-modal-header {
+      padding: 1.5rem 1.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .cust-modal-header h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cust-modal-header h3 i { color: var(--primary); }
+    .modal-close-btn {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+    .cust-modal-body {
+      padding: 1.25rem 1.75rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .cust-modal-footer {
+      padding: 1rem 1.75rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      background: var(--bg-body);
+    }
+    .cust-modal-footer button {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-cancel-modal {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border-color) !important;
+    }
+    .btn-cancel-modal:hover { background: var(--bg-card); }
+    .btn-save-modal {
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    .btn-save-modal:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99,102,241,0.4);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+      color: var(--text-secondary);
+    }
+    .form-group label .required { color: #dc2626; margin-left: 2px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Detail Modal */
+    #detailModalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #detailModalOverlay.active { display: flex !important; }
+    #detailModalBox {
+      background: var(--bg-card);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .detail-header {
+      text-align: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .detail-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      font-weight: 700;
+      margin: 0 auto 0.75rem;
+    }
+    .detail-name { font-size: 1.25rem; font-weight: 700; margin: 0; }
+    .detail-tier { margin-top: 0.5rem; }
+    .detail-body { padding: 1.25rem 1.75rem; overflow-y: auto; flex: 1; }
+    .detail-section { margin-bottom: 1.25rem; }
+    .detail-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--text-secondary); }
+    .detail-value { font-weight: 600; }
+
+    .purchase-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
+    }
+    .purchase-item:last-child { border-bottom: none; }
+    .purchase-date { color: var(--text-secondary); font-size: 0.75rem; }
+    .purchase-total { font-weight: 600; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-secondary);
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.3; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem; color: var(--text-primary); }
+    .empty-state p { margin: 0; font-size: 0.875rem; }
+  </style>
+<base target="_blank">
+</head>
+<body>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading Customers...</p>
+  </div>
+
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fas fa-store"></i></div>
+        <span class="sidebar-brand">CloudPOS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+          <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>POS</span></a>
+          <a href="sales.html" class="nav-item"><i class="fas fa-receipt"></i><span>Sales</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="products.html" class="nav-item"><i class="fas fa-box"></i><span>Products</span></a>
+          <a href="inventory.html" class="nav-item"><i class="fas fa-warehouse"></i><span>Inventory</span></a>
+          <a href="purchase-orders.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Purchase Orders</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">People</div>
+          <a href="customers.html" class="nav-item active"><i class="fas fa-users"></i><span>Customers</span></a>
+          <a href="suppliers.html" class="nav-item"><i class="fas fa-truck"></i><span>Suppliers</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+          <a href="expenses.html" class="nav-item"><i class="fas fa-wallet"></i><span>Expenses</span></a>
+          <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="users.html" class="nav-item"><i class="fas fa-user-shield"></i><span>Users</span></a>
+          <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="logout()">
+          <div class="user-avatar"><i class="fas fa-user"></i></div>
+          <div class="user-info">
+            <div class="user-name" data-user-name>Loading...</div>
+            <div class="user-role" data-user-role>Loading...</div>
+          </div>
+          <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="page-title">
+          <h1>Customers</h1>
+          <p>Manage your customer relationships</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="export-btn" onclick="exportCustomers()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+          <button class="btn btn-primary" onclick="openCustomerModal()">
+            <i class="fas fa-plus"></i> Add Customer
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="cust-stats" id="custStats">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <h4>Total Customers</h4>
+            <p class="stat-value" id="statTotalCustomers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon active"><i class="fas fa-user-check"></i></div>
+          <div class="stat-info">
+            <h4>Active</h4>
+            <p class="stat-value" id="statActiveCustomers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon vip"><i class="fas fa-crown"></i></div>
+          <div class="stat-info">
+            <h4>VIP Members</h4>
+            <p class="stat-value" id="statVIPCustomers">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon revenue"><i class="fas fa-peso-sign"></i></div>
+          <div class="stat-info">
+            <h4>Total Revenue</h4>
+            <p class="stat-value" id="statCustomerRevenue">₱0.00</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="searchCustomers" placeholder="Search by name, email, or phone..." oninput="filterCustomers()">
+        <select id="tierFilter" onchange="filterCustomers()">
+          <option value="all">All Tiers</option>
+          <option value="Regular">Regular</option>
+          <option value="Bronze">Bronze</option>
+          <option value="Silver">Silver</option>
+          <option value="Gold">Gold</option>
+          <option value="VIP">VIP</option>
+        </select>
+        <select id="statusFilter" onchange="filterCustomers()">
+          <option value="all">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+        <button class="export-btn" style="margin-left: auto;" onclick="resetCustomerFilters()">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+
+      <!-- Customers Table -->
+      <div class="card" style="padding: 0;">
+        <div style="overflow-x: auto;">
+          <table class="cust-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Contact</th>
+                <th>Tier</th>
+                <th style="text-align: right;">Total Spent</th>
+                <th style="text-align: center;">Orders</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="customersPagination">
+          <div class="page-info" id="customersPageInfo">Showing 0 of 0 customers</div>
+          <div class="page-buttons" id="customersPageButtons"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Customer Modal (Add/Edit) -->
+  <div id="customerModalOverlay">
+    <div id="customerModalBox">
+      <div class="cust-modal-header">
+        <h3><i class="fas fa-user-plus"></i> <span id="modalTitle">Add Customer</span></h3>
+        <button class="modal-close-btn" onclick="closeCustomerModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="cust-modal-body">
+        <form id="customerForm" onsubmit="saveCustomer(event)">
+          <input type="hidden" id="customerId">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name <span class="required">*</span></label>
+              <input type="text" id="firstName" placeholder="e.g. Juan" required>
+            </div>
+            <div class="form-group">
+              <label>Last Name <span class="required">*</span></label>
+              <input type="text" id="lastName" placeholder="e.g. Dela Cruz" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="email" placeholder="e.g. juan@email.com">
+            </div>
+            <div class="form-group">
+              <label>Phone <span class="required">*</span></label>
+              <input type="tel" id="phone" placeholder="e.g. 0917-123-4567" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Address</label>
+            <textarea id="address" rows="2" placeholder="e.g. 123 Main St, Manila"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tier</label>
+              <select id="tier">
+                <option value="Regular">Regular</option>
+                <option value="Bronze">Bronze</option>
+                <option value="Silver">Silver</option>
+                <option value="Gold">Gold</option>
+                <option value="VIP">VIP</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="notes" rows="2" placeholder="e.g. Preferred payment: GCash, Birthday: Jan 15"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="cust-modal-footer">
+        <button class="btn-cancel-modal" onclick="closeCustomerModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn-save-modal" onclick="document.getElementById('customerForm').dispatchEvent(new Event('submit'))">
+          <i class="fas fa-check"></i> Save Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Detail Modal -->
+  <div id="detailModalOverlay">
+    <div id="detailModalBox">
+      <div class="cust-modal-header">
+        <h3><i class="fas fa-id-card"></i> Customer Details</h3>
+        <button class="modal-close-btn" onclick="closeDetailModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="detail-body" id="detailBody"></div>
+      <div class="cust-modal-footer">
+        <button class="btn-cancel-modal" onclick="closeDetailModal()">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/customers.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 300); }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
