@@ -418,7 +418,28 @@ async function completeSale() {
     
     if (response.status === 'success') {
       showToast('Sale completed successfully!', 'success');
-      showReceipt(response.data.saleId, saleData, cashReceived, cart);
+
+      // Also save to localStorage for offline access
+      const savedSale = {
+        saleId: response.data.saleId || generateId(),
+        ...saleData,
+        items: cart.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total
+        })),
+        cashReceived: cashReceived,
+        createdAt: new Date().toISOString(),
+        date: new Date().toISOString()
+      };
+
+      const existingSales = JSON.parse(localStorage.getItem('cloudpos_sales') || '[]');
+      existingSales.unshift(savedSale);
+      localStorage.setItem('cloudpos_sales', JSON.stringify(existingSales));
+
+      showReceipt(savedSale.saleId, saleData, cashReceived, cart);
       clearCart();
       await loadProducts(); // Refresh stock
     } else {
@@ -426,7 +447,31 @@ async function completeSale() {
     }
   } catch (error) {
     console.error('Sale error:', error);
-    showToast('Failed to complete sale: ' + error.message, 'error');
+
+    // Save locally even if API fails
+    const offlineSale = {
+      saleId: 'OFF-' + Date.now(),
+      ...saleData,
+      items: cart.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.total
+      })),
+      cashReceived: cashReceived,
+      createdAt: new Date().toISOString(),
+      date: new Date().toISOString(),
+      offline: true
+    };
+
+    const existingSales = JSON.parse(localStorage.getItem('cloudpos_sales') || '[]');
+    existingSales.unshift(offlineSale);
+    localStorage.setItem('cloudpos_sales', JSON.stringify(existingSales));
+
+    showToast('Sale saved locally (offline mode)', 'warning');
+    showReceipt(offlineSale.saleId, saleData, cashReceived, cart);
+    clearCart();
   } finally {
     const btn = document.getElementById('completeBtn');
     btn.disabled = false;
