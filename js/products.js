@@ -8,7 +8,7 @@ let categories = [];
 document.addEventListener('DOMContentLoaded', async () => {
   const user = getCurrentUser();
   if (!user) { window.location.href = 'login.html'; return; }
-  
+
   loadTheme();
   await loadProducts();
 });
@@ -21,47 +21,47 @@ async function loadProducts() {
       extractCategories();
       renderProducts();
       renderCategories();
-    } else {
-      // Only show error if no data loaded
-      if (!products || products.length === 0) {
-        showToast('Failed to load products', 'error');
-      }
     }
   } catch (error) {
+    // Silent fail - don't show toast if this is just a background refresh
     console.error('Load products error:', error);
-    // Only show error if no products displayed
-    if (!products || products.length === 0) {
-      showToast('Failed to load products', 'error');
-    }
   }
 }
+
 function extractCategories() {
   const cats = new Set(products.map(p => p.category).filter(Boolean));
   categories = Array.from(cats).sort();
-  
+
   const datalist = document.getElementById('categoryList');
-  datalist.innerHTML = categories.map(c => `<option value="${c}">`).join('');
-  
+  if (datalist) {
+    datalist.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+  }
+
   const filter = document.getElementById('categoryFilter');
-  filter.innerHTML = '<option value="all">All Categories</option>' + 
-    categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (filter) {
+    filter.innerHTML = '<option value="all">All Categories</option>' + 
+      categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
 }
 
 function renderProducts() {
-  const search = document.getElementById('searchProducts').value.toLowerCase();
-  const catFilter = document.getElementById('categoryFilter').value;
-  
+  const searchInput = document.getElementById('searchProducts');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const search = searchInput ? searchInput.value.toLowerCase() : '';
+  const catFilter = categoryFilter ? categoryFilter.value : 'all';
+
   let filtered = products;
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
   if (catFilter !== 'all') filtered = filtered.filter(p => p.category === catFilter);
-  
+
   const tbody = document.getElementById('productsTableBody');
-  
+  if (!tbody) return;
+
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-secondary);">No products found</td></tr>`;
     return;
   }
-  
+
   tbody.innerHTML = filtered.map(p => {
     const stockClass = p.stock === 0 ? 'color: var(--danger);' : 
                        p.stock <= p.minStock ? 'color: var(--warning);' : 'color: var(--success);';
@@ -96,65 +96,110 @@ function renderProducts() {
 }
 
 function openProductModal(productId = null) {
-  document.getElementById('productForm').reset();
-  document.getElementById('productId').value = '';
-  
+  const form = document.getElementById('productForm');
+  if (form) form.reset();
+
+  const productIdInput = document.getElementById('productId');
+  if (productIdInput) productIdInput.value = '';
+
   if (productId) {
     const p = products.find(x => x.productId === productId);
     if (!p) return;
-    document.getElementById('modalTitle').textContent = 'Edit Product';
-    document.getElementById('productId').value = p.productId;
-    document.getElementById('productName').value = p.name;
-    document.getElementById('productBarcode').value = p.barcode || '';
-    document.getElementById('productSku').value = p.sku || '';
-    document.getElementById('productCategory').value = p.category || '';
-    document.getElementById('productBuyingPrice').value = p.buyingPrice;
-    document.getElementById('productSellingPrice').value = p.sellingPrice;
-    document.getElementById('productStock').value = p.stock;
-    document.getElementById('productMinStock').value = p.minStock;
-    document.getElementById('productSupplier').value = p.supplier || '';
-    document.getElementById('productStatus').value = p.status;
+
+    const modalTitle = document.getElementById('modalTitle');
+    if (modalTitle) modalTitle.textContent = 'Edit Product';
+
+    if (productIdInput) productIdInput.value = p.productId;
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    };
+
+    setVal('productName', p.name);
+    setVal('productBarcode', p.barcode);
+    setVal('productSku', p.sku);
+    setVal('productCategory', p.category);
+    setVal('productBuyingPrice', p.buyingPrice);
+    setVal('productSellingPrice', p.sellingPrice);
+    setVal('productStock', p.stock);
+    setVal('productMinStock', p.minStock);
+    setVal('productSupplier', p.supplier);
+    setVal('productStatus', p.status);
   } else {
-    document.getElementById('modalTitle').textContent = 'Add Product';
+    const modalTitle = document.getElementById('modalTitle');
+    if (modalTitle) modalTitle.textContent = 'Add Product';
   }
-  
-  document.getElementById('productModal').classList.remove('hidden');
+
+  const overlay = document.getElementById('productModalOverlay');
+  if (overlay) {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 }
 
 function closeProductModal() {
-  document.getElementById('productModal').classList.add('hidden');
+  const overlay = document.getElementById('productModalOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 async function saveProduct(e) {
   e.preventDefault();
-  
-  const productId = document.getElementById('productId').value;
+
+  const productId = document.getElementById('productId');
+  const name = document.getElementById('productName');
+  const barcode = document.getElementById('productBarcode');
+  const sku = document.getElementById('productSku');
+  const category = document.getElementById('productCategory');
+  const buyingPrice = document.getElementById('productBuyingPrice');
+  const sellingPrice = document.getElementById('productSellingPrice');
+  const stock = document.getElementById('productStock');
+  const minStock = document.getElementById('productMinStock');
+  const supplier = document.getElementById('productSupplier');
+  const status = document.getElementById('productStatus');
+
+  if (!name || !name.value.trim()) {
+    showToast('Product name is required', 'error');
+    return;
+  }
+
   const data = {
-    name: document.getElementById('productName').value,
-    barcode: document.getElementById('productBarcode').value,
-    sku: document.getElementById('productSku').value,
-    category: document.getElementById('productCategory').value,
-    buyingPrice: parseFloat(document.getElementById('productBuyingPrice').value),
-    sellingPrice: parseFloat(document.getElementById('productSellingPrice').value),
-    stock: parseInt(document.getElementById('productStock').value),
-    minStock: parseInt(document.getElementById('productMinStock').value) || 0,
-    supplier: document.getElementById('productSupplier').value,
-    status: document.getElementById('productStatus').value
+    name: name.value.trim(),
+    barcode: barcode && barcode.value ? barcode.value.trim() : '',
+    sku: sku && sku.value ? sku.value.trim() : '',
+    category: category && category.value ? category.value.trim() : '',
+    buyingPrice: buyingPrice && buyingPrice.value ? parseFloat(buyingPrice.value) : 0,
+    sellingPrice: sellingPrice && sellingPrice.value ? parseFloat(sellingPrice.value) : 0,
+    stock: stock && stock.value ? parseInt(stock.value) : 0,
+    minStock: minStock && minStock.value ? parseInt(minStock.value) : 0,
+    supplier: supplier && supplier.value ? supplier.value.trim() : '',
+    status: status && status.value ? status.value : 'Active'
   };
-  
+
+  console.log('Saving product:', data);
+
   try {
-    const action = productId ? 'updateProduct' : 'addProduct';
-    if (productId) data.productId = productId;
-    
+    const action = productId && productId.value ? 'updateProduct' : 'addProduct';
+    if (productId && productId.value) data.productId = productId.value;
+
+    console.log('API Action:', action);
+
     const response = await apiCall(action, data);
-    
+    console.log('API Response:', response);
+
     if (response.status === 'success') {
-      showToast(productId ? 'Product updated!' : 'Product added!', 'success');
+      showToast(productId && productId.value ? 'Product updated!' : 'Product added!', 'success');
       closeProductModal();
       await loadProducts();
+    } else {
+      showToast(response.message || 'Failed to save', 'error');
     }
   } catch (error) {
-    showToast('Failed to save product', 'error');
+    console.error('Save error:', error);
+    showToast('Failed to save product: ' + error.message, 'error');
   }
 }
 
@@ -164,7 +209,7 @@ function editProduct(productId) {
 
 async function deleteProduct(productId) {
   if (!confirm('Are you sure you want to delete this product?')) return;
-  
+
   try {
     const response = await apiCall('deleteProduct', { productId });
     if (response.status === 'success') {
@@ -172,6 +217,7 @@ async function deleteProduct(productId) {
       await loadProducts();
     }
   } catch (error) {
+    console.error('Delete error:', error);
     showToast('Failed to delete product', 'error');
   }
 }
@@ -192,8 +238,8 @@ function loadTheme() {
 window.toggleSidebar = function() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('active');
+  if (sidebar) sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('active');
 };
 
 window.logout = logout;
