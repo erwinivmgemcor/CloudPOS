@@ -23,7 +23,6 @@ async function loadProducts() {
       renderCategories();
     }
   } catch (error) {
-    // Silent fail - don't show toast if this is just a background refresh
     console.error('Load products error:', error);
   }
 }
@@ -95,6 +94,78 @@ function renderProducts() {
   }).join('');
 }
 
+// ===== AUTO-SUGGEST FUNCTIONS =====
+
+function generateRandomBarcode() {
+  // Generate a 12-digit EAN-13 style barcode
+  const prefix = '8' + Math.floor(Math.random() * 9 + 1); // starts with 8x
+  const middle = String(Math.floor(Math.random() * 100000000)).padStart(8, '0');
+  const code = prefix + middle;
+  // Simple check digit calculation
+  let sum = 0;
+  for (let i = 0; i < code.length; i++) {
+    sum += parseInt(code[i]) * (i % 2 === 0 ? 1 : 3);
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return code + checkDigit;
+}
+
+function suggestBarcode() {
+  const barcodeInput = document.getElementById('productBarcode');
+  if (!barcodeInput) return;
+
+  // Check if barcode already exists
+  let barcode;
+  let attempts = 0;
+  do {
+    barcode = generateRandomBarcode();
+    attempts++;
+  } while (products.some(p => p.barcode === barcode) && attempts < 100);
+
+  barcodeInput.value = barcode;
+  barcodeInput.style.borderColor = '#22c55e';
+  setTimeout(() => { barcodeInput.style.borderColor = ''; }, 1000);
+  showToast('Barcode auto-generated!', 'success');
+}
+
+function suggestSKU() {
+  const skuInput = document.getElementById('productSku');
+  if (!skuInput) return;
+
+  // Get highest existing SKU number
+  let maxNum = 0;
+  products.forEach(p => {
+    if (p.sku && p.sku.startsWith('SKU-')) {
+      const num = parseInt(p.sku.replace('SKU-', ''));
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  });
+
+  const nextNum = String(maxNum + 1).padStart(3, '0');
+  skuInput.value = 'SKU-' + nextNum;
+  skuInput.style.borderColor = '#22c55e';
+  setTimeout(() => { skuInput.style.borderColor = ''; }, 1000);
+  showToast('SKU auto-generated!', 'success');
+}
+
+function suggestMinStock() {
+  const stockInput = document.getElementById('productStock');
+  const minStockInput = document.getElementById('productMinStock');
+  if (!minStockInput || !stockInput) return;
+
+  const stock = parseInt(stockInput.value) || 0;
+  // Suggest 20% of current stock, minimum 5, maximum 50
+  let suggested = Math.max(5, Math.min(50, Math.round(stock * 0.2)));
+  if (stock === 0) suggested = 10;
+
+  minStockInput.value = suggested;
+  minStockInput.style.borderColor = '#22c55e';
+  setTimeout(() => { minStockInput.style.borderColor = ''; }, 1000);
+  showToast('Min stock set to ' + suggested, 'success');
+}
+
+// ===== MODAL FUNCTIONS =====
+
 function openProductModal(productId = null) {
   const form = document.getElementById('productForm');
   if (form) form.reset();
@@ -129,6 +200,12 @@ function openProductModal(productId = null) {
   } else {
     const modalTitle = document.getElementById('modalTitle');
     if (modalTitle) modalTitle.textContent = 'Add Product';
+
+    // Auto-suggest for new products
+    setTimeout(() => {
+      suggestSKU();
+      suggestBarcode();
+    }, 100);
   }
 
   const overlay = document.getElementById('productModalOverlay');
@@ -166,13 +243,21 @@ async function saveProduct(e) {
     return;
   }
 
+  // Validate selling price > buying price
+  const bp = buyingPrice && buyingPrice.value ? parseFloat(buyingPrice.value) : 0;
+  const sp = sellingPrice && sellingPrice.value ? parseFloat(sellingPrice.value) : 0;
+  if (sp <= bp) {
+    showToast('Selling price must be higher than buying price', 'warning');
+    return;
+  }
+
   const data = {
     name: name.value.trim(),
     barcode: barcode && barcode.value ? barcode.value.trim() : '',
     sku: sku && sku.value ? sku.value.trim() : '',
     category: category && category.value ? category.value.trim() : '',
-    buyingPrice: buyingPrice && buyingPrice.value ? parseFloat(buyingPrice.value) : 0,
-    sellingPrice: sellingPrice && sellingPrice.value ? parseFloat(sellingPrice.value) : 0,
+    buyingPrice: bp,
+    sellingPrice: sp,
     stock: stock && stock.value ? parseInt(stock.value) : 0,
     minStock: minStock && minStock.value ? parseInt(minStock.value) : 0,
     supplier: supplier && supplier.value ? supplier.value.trim() : '',
@@ -250,3 +335,6 @@ window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.searchProducts = searchProducts;
 window.filterByCategory = filterByCategory;
+window.suggestBarcode = suggestBarcode;
+window.suggestSKU = suggestSKU;
+window.suggestMinStock = suggestMinStock;
