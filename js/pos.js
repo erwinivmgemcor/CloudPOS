@@ -462,10 +462,10 @@ function clearCart() {
 // RECEIPT
 // ============================================
 
-function showReceipt(saleId, saleData, cashReceived) {
+function showReceipt(saleId, saleData, cashReceived, cartItems) {
   const change = cashReceived - saleData.total;
   const now = new Date();
-
+  
   const receiptHTML = `
     <div class="receipt-header">
       <h3>CloudPOS</h3>
@@ -473,9 +473,9 @@ function showReceipt(saleId, saleData, cashReceived) {
       <p>${now.toLocaleDateString('en-PH')} ${now.toLocaleTimeString('en-PH')}</p>
       <p style="font-size: 0.6875rem; color: #999;">${saleId}</p>
     </div>
-
+    
     <div class="receipt-items">
-      ${saleData.items.map(item => `
+      ${cartItems.map(item => `
         <div class="receipt-item">
           <span class="receipt-item-name">${escapeHtml(item.name)}</span>
           <span class="receipt-item-qty">x${item.quantity}</span>
@@ -483,7 +483,7 @@ function showReceipt(saleId, saleData, cashReceived) {
         </div>
       `).join('')}
     </div>
-
+    
     <div class="receipt-summary">
       <div class="receipt-summary-row">
         <span>Subtotal</span>
@@ -514,12 +514,12 @@ function showReceipt(saleId, saleData, cashReceived) {
         <span>${formatPeso(change)}</span>
       </div>
     </div>
-
+    
     <div class="receipt-footer">
       <p>Thank you for your purchase!</p>
       <p>Please come again</p>
     </div>
-
+    
     <div class="receipt-actions">
       <button class="btn btn-primary" onclick="printReceipt()">
         <i class="fas fa-print"></i> Print
@@ -529,7 +529,7 @@ function showReceipt(saleId, saleData, cashReceived) {
       </button>
     </div>
   `;
-
+  
   document.getElementById('receiptContent').innerHTML = receiptHTML;
   document.getElementById('receiptModal').classList.remove('hidden');
 }
