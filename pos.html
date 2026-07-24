@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS | CloudPOS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ZXing for Barcode/QR Scanner -->
+  <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/pos.css">
+<base target="_blank">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading POS...</p>
+  </div>
+
+  <!-- Mobile Sidebar Toggle -->
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-store"></i>
+        </div>
+        <span class="sidebar-brand">CloudPOS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="pos.html" class="nav-item active">
+            <i class="fas fa-cash-register"></i>
+            <span>POS</span>
+          </a>
+          <a href="sales.html" class="nav-item">
+            <i class="fas fa-receipt"></i>
+            <span>Sales</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="products.html" class="nav-item">
+            <i class="fas fa-box"></i>
+            <span>Products</span>
+          </a>
+          <a href="inventory.html" class="nav-item">
+            <i class="fas fa-warehouse"></i>
+            <span>Inventory</span>
+          </a>
+          <a href="purchase-orders.html" class="nav-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Purchase Orders</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">People</div>
+          <a href="customers.html" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Customers</span>
+          </a>
+          <a href="suppliers.html" class="nav-item">
+            <i class="fas fa-truck"></i>
+            <span>Suppliers</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+          <a href="expenses.html" class="nav-item">
+            <i class="fas fa-wallet"></i>
+            <span>Expenses</span>
+          </a>
+          <a href="reports.html" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            <span>Reports</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="users.html" class="nav-item">
+            <i class="fas fa-user-shield"></i>
+            <span>Users</span>
+          </a>
+          <a href="settings.html" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="logout()">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name" data-user-name>Loading...</div>
+            <div class="user-role" data-user-role>Loading...</div>
+          </div>
+          <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" style="padding: 0;">
+      <div class="pos-container">
+        <!-- Left Side - Products -->
+        <div class="pos-products-area">
+          <!-- Search Bar -->
+          <div class="pos-search-bar">
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="pos-search-input" 
+              placeholder="Search products by name or barcode..."
+              oninput="searchProducts(this.value)"
+            >
+            <button class="pos-scan-btn" onclick="openScanner()">
+              <i class="fas fa-barcode"></i>
+              <span>Scan</span>
+            </button>
+          </div>
+
+          <!-- Categories -->
+          <div class="pos-categories" id="categoriesContainer">
+            <button class="category-btn active" onclick="filterCategory('all')">All</button>
+            <!-- Categories populated by JS -->
+          </div>
+
+          <!-- Product Grid -->
+          <div class="pos-product-grid" id="productGrid">
+            <!-- Products populated by JS -->
+          </div>
+        </div>
+
+        <!-- Right Side - Cart -->
+        <div class="pos-cart-area">
+          <!-- Cart Header -->
+          <div class="pos-cart-header">
+            <h2><i class="fas fa-shopping-cart" style="margin-right: 0.5rem;"></i>Current Order</h2>
+          </div>
+
+          <!-- Cart Items -->
+          <div class="pos-cart-items" id="cartItems">
+            <div class="empty-cart">
+              <i class="fas fa-shopping-basket"></i>
+              <p>Your cart is empty</p>
+              <p style="font-size: 0.75rem; margin-top: 0.5rem;">Click a product to add</p>
+            </div>
+          </div>
+
+          <!-- Cart Summary -->
+          <div class="pos-cart-summary" id="cartSummary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="subtotalAmount">₱0.00</span>
+            </div>
+            <div class="summary-row discount">
+              <span>Discount</span>
+              <span id="discountAmount">-₱0.00</span>
+            </div>
+            <div class="summary-row tax">
+              <span>Tax (0%)</span>
+              <span id="taxAmount">₱0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span id="totalAmount">₱0.00</span>
+            </div>
+          </div>
+
+          <!-- Payment Section -->
+          <div class="pos-payment-section">
+            <div class="payment-method-label">Payment Method</div>
+            <div class="payment-methods" id="paymentMethods">
+              <button class="payment-method-btn active" data-method="cash" onclick="selectPaymentMethod('cash')">
+                <i class="fas fa-money-bill-wave"></i>
+                Cash
+              </button>
+              <button class="payment-method-btn" data-method="gcash" onclick="selectPaymentMethod('gcash')">
+                <i class="fas fa-mobile-alt"></i>
+                GCash
+              </button>
+              <button class="payment-method-btn" data-method="maya" onclick="selectPaymentMethod('maya')">
+                <i class="fas fa-credit-card"></i>
+                Maya
+              </button>
+              <button class="payment-method-btn" data-method="bank" onclick="selectPaymentMethod('bank')">
+                <i class="fas fa-university"></i>
+                Bank
+              </button>
+            </div>
+
+            <!-- Cash Input -->
+            <div id="cashInputSection">
+              <div class="quick-cash">
+                <button class="quick-cash-btn" onclick="setCash(50)">₱50</button>
+                <button class="quick-cash-btn" onclick="setCash(100)">₱100</button>
+                <button class="quick-cash-btn" onclick="setCash(200)">₱200</button>
+                <button class="quick-cash-btn" onclick="setCash(500)">₱500</button>
+                <button class="quick-cash-btn" onclick="setCash(1000)">₱1000</button>
+                <button class="quick-cash-btn" onclick="setCashExact()">Exact</button>
+              </div>
+              <div class="cash-input-group">
+                <label>Cash Received</label>
+                <input 
+                  type="number" 
+                  id="cashInput" 
+                  class="cash-input" 
+                  placeholder="0.00"
+                  oninput="calculateChange()"
+                >
+              </div>
+              <div class="change-display" id="changeDisplay">
+                <div class="change-label">Change</div>
+                <div class="change-amount" id="changeAmount">₱0.00</div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <textarea 
+              id="saleNotes" 
+              class="notes-input" 
+              rows="2" 
+              placeholder="Add notes (optional)..."
+            ></textarea>
+
+            <!-- Actions -->
+            <div class="pos-actions">
+              <button class="btn-cancel" onclick="cancelSale()">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+              <button class="btn-complete" id="completeBtn" onclick="completeSale()" disabled>
+                <i class="fas fa-check"></i> Complete Sale
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scanner Modal -->
+  <div class="scanner-modal hidden" id="scannerModal">
+    <div class="scanner-content">
+      <h3><i class="fas fa-barcode"></i> Barcode Scanner</h3>
+      <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+        Point your camera at a barcode
+      </p>
+      <video id="scannerVideo" class="scanner-video" autoplay playsinline></video>
+      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button class="btn btn-primary" onclick="closeScanner()">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="receipt-modal hidden" id="receiptModal">
+    <div class="receipt-content" id="receiptContent">
+      <!-- Receipt populated by JS -->
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/pos.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) {
+          loader.classList.add('hidden');
+          setTimeout(() => loader.remove(), 300);
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
