@@ -377,21 +377,26 @@ async function completeSale() {
     showToast('Cart is empty', 'warning');
     return;
   }
-
+  
   const total = getCartTotal();
   const cashReceived = currentPaymentMethod === 'cash' 
     ? parseFloat(document.getElementById('cashInput').value) || 0 
     : total;
-
+  
   if (currentPaymentMethod === 'cash' && cashReceived < total) {
     showToast('Insufficient cash', 'error');
     return;
   }
-
+  
   const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
   const discount = discountAmount || (subtotal * (discountPercent / 100));
   const tax = subtotal * (taxRate / 100);
-
+  
+  // Build items string for URL (simpler format)
+  const itemsString = cart.map(item => 
+    `${item.productId}:${item.quantity}:${item.unitPrice}:${item.total}`
+  ).join('|');
+  
   const saleData = {
     customerId: 'WALK-IN',
     subtotal: subtotal,
@@ -401,24 +406,19 @@ async function completeSale() {
     paymentMethod: currentPaymentMethod.toUpperCase(),
     cashierId: getCurrentUser()?.userId || 'SYSTEM',
     notes: document.getElementById('saleNotes').value || '',
-    items: cart.map(item => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      total: item.total
-    }))
+    items: itemsString
   };
-
+  
   try {
     const btn = document.getElementById('completeBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Processing...';
-
+    
     const response = await apiCall('saveSale', saleData);
-
+    
     if (response.status === 'success') {
       showToast('Sale completed successfully!', 'success');
-      showReceipt(response.data.saleId, saleData, cashReceived);
+      showReceipt(response.data.saleId, saleData, cashReceived, cart);
       clearCart();
       await loadProducts(); // Refresh stock
     } else {
@@ -426,7 +426,7 @@ async function completeSale() {
     }
   } catch (error) {
     console.error('Sale error:', error);
-    showToast('Failed to complete sale', 'error');
+    showToast('Failed to complete sale: ' + error.message, 'error');
   } finally {
     const btn = document.getElementById('completeBtn');
     btn.disabled = false;
