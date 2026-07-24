@@ -79,10 +79,10 @@ function initLoginForm() {
     setLoading(true);
     
     try {
-      const response = await apiCall('login', {
-        username,
-        password,
-        rememberMe
+        const response = await apiCall('login', {
+  username: username,
+  password: password,
+  rememberMe: rememberMe
       });
       
       if (response.status === 'success') {
