@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products | CloudPOS</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading Products...</p>
+  </div>
+
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fas fa-store"></i></div>
+        <span class="sidebar-brand">CloudPOS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+          <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>POS</span></a>
+          <a href="sales.html" class="nav-item"><i class="fas fa-receipt"></i><span>Sales</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="products.html" class="nav-item active"><i class="fas fa-box"></i><span>Products</span></a>
+          <a href="inventory.html" class="nav-item"><i class="fas fa-warehouse"></i><span>Inventory</span></a>
+          <a href="purchase-orders.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Purchase Orders</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">People</div>
+          <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>Customers</span></a>
+          <a href="suppliers.html" class="nav-item"><i class="fas fa-truck"></i><span>Suppliers</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+          <a href="expenses.html" class="nav-item"><i class="fas fa-wallet"></i><span>Expenses</span></a>
+          <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="users.html" class="nav-item"><i class="fas fa-user-shield"></i><span>Users</span></a>
+          <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="logout()">
+          <div class="user-avatar"><i class="fas fa-user"></i></div>
+          <div class="user-info">
+            <div class="user-name" data-user-name>Loading...</div>
+            <div class="user-role" data-user-role>Loading...</div>
+          </div>
+          <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="page-title">
+          <h1>Products</h1>
+          <p>Manage your product catalog</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="btn btn-primary" onclick="openProductModal()">
+            <i class="fas fa-plus"></i> Add Product
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <input type="text" id="searchProducts" class="pos-search-input" placeholder="Search products..." oninput="searchProducts(this.value)" style="max-width: 400px;">
+        <select id="categoryFilter" class="pos-search-input" onchange="filterByCategory(this.value)" style="max-width: 200px;">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+
+      <!-- Products Table -->
+      <div class="card">
+        <div class="card-body" style="padding: 0;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Product</th>
+                <th style="padding: 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Category</th>
+                <th style="padding: 1rem; text-align: right; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Buying Price</th>
+                <th style="padding: 1rem; text-align: right; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Selling Price</th>
+                <th style="padding: 1rem; text-align: center; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Stock</th>
+                <th style="padding: 1rem; text-align: center; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Status</th>
+                <th style="padding: 1rem; text-align: right; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="receipt-modal hidden" id="productModal" style="z-index: 1000;">
+    <div class="receipt-content" style="max-width: 500px; background: var(--bg-card); color: var(--text-primary);">
+      <h3 id="modalTitle">Add Product</h3>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <input type="hidden" id="productId">
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Product Name *</label>
+          <input type="text" id="productName" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Barcode</label>
+            <input type="text" id="productBarcode" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">SKU</label>
+            <input type="text" id="productSku" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Category</label>
+          <input type="text" id="productCategory" list="categoryList" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          <datalist id="categoryList"></datalist>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Buying Price *</label>
+            <input type="number" id="productBuyingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Selling Price *</label>
+            <input type="number" id="productSellingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Stock *</label>
+            <input type="number" id="productStock" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Min Stock</label>
+            <input type="number" id="productMinStock" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Supplier</label>
+          <input type="text" id="productSupplier" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
+          <select id="productStatus" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn" style="flex: 1; background: var(--border-color); color: var(--text-primary);" onclick="closeProductModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex: 2;">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/products.js"></script>
+  
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 300); }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
