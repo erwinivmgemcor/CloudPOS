@@ -21,12 +21,20 @@ async function loadProducts() {
       extractCategories();
       renderProducts();
       renderCategories();
+    } else {
+      // Only show error if no data loaded
+      if (!products || products.length === 0) {
+        showToast('Failed to load products', 'error');
+      }
     }
   } catch (error) {
-    showToast('Failed to load products', 'error');
+    console.error('Load products error:', error);
+    // Only show error if no products displayed
+    if (!products || products.length === 0) {
+      showToast('Failed to load products', 'error');
+    }
   }
 }
-
 function extractCategories() {
   const cats = new Set(products.map(p => p.category).filter(Boolean));
   categories = Array.from(cats).sort();
