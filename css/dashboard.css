@@ -615,3 +615,23 @@
 .empty-state p {
   font-size: 0.875rem;
 }
+/* Modal Fix - ensure modal is on top */
+.receipt-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.receipt-modal.hidden {
+  display: none !important;
+}
+
+.receipt-content {
+  position: relative;
+  z-index: 10000 !important;
+}
