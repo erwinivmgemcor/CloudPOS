@@ -129,75 +129,81 @@
     </main>
   </div>
 
-  <!-- Product Modal -->
-  <div class="receipt-modal hidden" id="productModal" style="z-index: 1000;">
-    <div class="receipt-content" style="max-width: 500px; background: var(--bg-card); color: var(--text-primary);">
+  </div> <!-- Close dashboard-container -->
+
+  <!-- Product Modal - OUTSIDE dashboard-container -->
+  <div class="receipt-modal hidden" id="productModal" style="z-index: 9999;">
+    <div class="receipt-content" style="max-width: 500px; width: 100%; background: var(--bg-card); color: var(--text-primary); max-height: 90vh; overflow-y: auto;">
       <h3 id="modalTitle">Add Product</h3>
-      <form id="productForm" onsubmit="saveProduct(event)">
-        <input type="hidden" id="productId">
-        
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Product Name *</label>
-          <input type="text" id="productName" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Barcode</label>
-            <input type="text" id="productBarcode" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+      
+      <!-- Scrollable form container -->
+      <div style="max-height: 70vh; overflow-y: auto; padding-right: 0.5rem;">
+        <form id="productForm" onsubmit="saveProduct(event)">
+          <input type="hidden" id="productId">
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Product Name *</label>
+            <input type="text" id="productName" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
           </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">SKU</label>
-            <input type="text" id="productSku" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Barcode</label>
+              <input type="text" id="productBarcode" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">SKU</label>
+              <input type="text" id="productSku" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
           </div>
-        </div>
-        
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Category</label>
-          <input type="text" id="productCategory" list="categoryList" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
-          <datalist id="categoryList"></datalist>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Buying Price *</label>
-            <input type="number" id="productBuyingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Category</label>
+            <input type="text" id="productCategory" list="categoryList" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            <datalist id="categoryList"></datalist>
           </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Selling Price *</label>
-            <input type="number" id="productSellingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Buying Price *</label>
+              <input type="number" id="productBuyingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Selling Price *</label>
+              <input type="number" id="productSellingPrice" step="0.01" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
           </div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Stock *</label>
-            <input type="number" id="productStock" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Stock *</label>
+              <input type="number" id="productStock" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Min Stock</label>
+              <input type="number" id="productMinStock" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+            </div>
           </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Min Stock</label>
-            <input type="number" id="productMinStock" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Supplier</label>
+            <input type="text" id="productSupplier" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
           </div>
-        </div>
-        
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Supplier</label>
-          <input type="text" id="productSupplier" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
-        </div>
-        
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
-          <select id="productStatus" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary);">
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-        
-        <div style="display: flex; gap: 0.75rem;">
-          <button type="button" class="btn" style="flex: 1; background: var(--border-color); color: var(--text-primary);" onclick="closeProductModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 2;">Save Product</button>
-        </div>
-      </form>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
+            <select id="productStatus" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-body); color: var(--text-primary); box-sizing: border-box;">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; gap: 0.75rem; position: sticky; bottom: 0; background: var(--bg-card); padding-top: 1rem;">
+            <button type="button" class="btn" style="flex: 1; background: var(--border-color); color: var(--text-primary); padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;" onclick="closeProductModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="flex: 2; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;">Save Product</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
