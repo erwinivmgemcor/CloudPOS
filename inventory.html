@@ -1,321 +1,815 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory — CloudPOS</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
-        .sidebar { background: #1e293b; min-height: 100vh; width: 260px; position: fixed; }
-        .sidebar-link { display: flex; align-items: center; padding: 14px 24px; color: #94a3b8; text-decoration: none; transition: all 0.2s; }
-        .sidebar-link:hover, .sidebar-link.active { background: #334155; color: #fff; }
-        .sidebar-link i { width: 24px; margin-right: 12px; font-size: 16px; }
-        .main-content { margin-left: 260px; padding: 24px 32px; }
-        .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .stat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .low-stock { background: #fef2f2; color: #dc2626; }
-        .in-stock { background: #f0fdf4; color: #16a34a; }
-        .out-stock { background: #fef2f2; color: #991b1b; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .search-input { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; width: 300px; outline: none; }
-        .search-input:focus { border-color: #3b82f6; }
-        .btn { padding: 10px 18px; border-radius: 8px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
-        .btn-primary { background: #3b82f6; color: #fff; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-ghost { background: transparent; color: #6b7280; }
-        .table th { background: #f9fafb; padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; }
-        .table td { padding: 14px 16px; border-bottom: 1px solid #f3f4f6; }
-        .table tr:hover { background: #f9fafb; }
-        .progress-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 50; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #fff; border-radius: 16px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { padding: 20px 24px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 20px 24px; }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; gap: 10px; }
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px; }
-        .form-input, .form-select { width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 14px; }
-        .form-input:focus, .form-select:focus { border-color: #3b82f6; }
-        .history-item { padding: 12px; border-radius: 8px; background: #f9fafb; margin-bottom: 8px; }
-        .history-in { border-left: 3px solid #10b981; }
-        .history-out { border-left: 3px solid #ef4444; }
-        .history-adj { border-left: 3px solid #f59e0b; }
-        .tab-btn { padding: 10px 20px; border: none; background: transparent; cursor: pointer; font-weight: 500; color: #6b7280; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
-        .pagination { display: flex; gap: 6px; }
-        .page-btn { padding: 8px 14px; border: 1px solid #e5e7eb; border-radius: 6px; background: #fff; cursor: pointer; }
-        .page-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory | CloudPOS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+
+  <!-- Inventory Page Styles -->
+  <style>
+    /* Stats Cards */
+    .inv-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    .stat-icon.products { background: linear-gradient(135deg, #6366f1, #7c3aed); color: white; }
+    .stat-icon.value { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+    .stat-icon.low { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .stat-icon.out { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+    .stat-info h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin: 0 0 0.25rem;
+    }
+    .stat-info .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    /* Tabs */
+    .inv-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 1.5rem;
+      background: var(--bg-card);
+      border-radius: 12px 12px 0 0;
+    }
+    .inv-tab-btn {
+      padding: 1rem 1.25rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .inv-tab-btn:hover { color: var(--primary); }
+    .inv-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      padding: 1rem 1.5rem 0;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .filter-bar .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding-left: 2.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 0.875rem center;
+    }
+
+    /* Inventory Table */
+    .inv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .inv-table th {
+      padding: 0.875rem 1rem;
+      text-align: left;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-body);
+    }
+    .inv-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .inv-table tr:hover td { background: var(--bg-body); }
+
+    .product-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .product-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--bg-body);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      overflow: hidden;
+    }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; }
+    .product-name { font-weight: 600; color: var(--text-primary); }
+    .product-barcode { font-size: 0.75rem; color: var(--text-secondary); }
+
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .stock-badge.in { background: #dcfce7; color: #166534; }
+    .stock-badge.low { background: #fef3c7; color: #92400e; }
+    .stock-badge.out { background: #fee2e2; color: #991b1b; }
+
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 0.375rem;
+      justify-content: flex-end;
+    }
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+    .page-info {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    .page-buttons {
+      display: flex;
+      gap: 0.25rem;
+    }
+    .page-btn {
+      padding: 0.5rem 0.875rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Movement Table */
+    .movement-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .movement-type.in { background: #dcfce7; color: #166534; }
+    .movement-type.out { background: #fee2e2; color: #991b1b; }
+    .movement-type.sale { background: #dbeafe; color: #1e40af; }
+    .movement-type.adjustment { background: #fef3c7; color: #92400e; }
+    .movement-type.return { background: #ede9fe; color: #5b21b6; }
+
+    /* Alerts */
+    .alert-item {
+      display: flex;
+      align-items: start;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s;
+    }
+    .alert-item.low { background: #fef3c7; }
+    .alert-item.out { background: #fee2e2; }
+    .alert-item.read { opacity: 0.6; }
+    .alert-icon { font-size: 1.25rem; margin-top: 0.125rem; }
+    .alert-item.low .alert-icon { color: #d97706; }
+    .alert-item.out .alert-icon { color: #dc2626; }
+    .alert-content { flex: 1; }
+    .alert-title { font-weight: 600; color: var(--text-primary); }
+    .alert-meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+    /* Modal */
+    #stockModalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+    #stockModalOverlay.active { display: flex !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #stockModalBox {
+      background: var(--bg-card);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .stock-modal-header {
+      padding: 1.5rem 1.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .stock-modal-header h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .stock-modal-header h3 i { color: var(--primary); }
+    .modal-close-btn {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+    .stock-modal-body {
+      padding: 1.25rem 1.75rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .stock-modal-footer {
+      padding: 1rem 1.75rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      background: var(--bg-body);
+    }
+    .stock-modal-footer button {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-cancel-modal {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border-color) !important;
+    }
+    .btn-cancel-modal:hover { background: var(--bg-card); }
+    .btn-save-modal {
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    .btn-save-modal:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99,102,241,0.4);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+      color: var(--text-secondary);
+    }
+    .form-group label .required { color: #dc2626; margin-left: 2px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* History Modal */
+    #historyModalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #historyModalOverlay.active { display: flex !important; }
+    #historyModalBox {
+      background: var(--bg-card);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35);
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .history-item {
+      padding: 0.875rem 1rem;
+      border-radius: 10px;
+      background: var(--bg-body);
+      margin-bottom: 0.5rem;
+      border-left: 3px solid var(--border-color);
+    }
+    .history-item.in { border-left-color: #10b981; }
+    .history-item.out { border-left-color: #ef4444; }
+    .history-item.sale { border-left-color: #3b82f6; }
+    .history-item.adjustment { border-left-color: #f59e0b; }
+    .history-item.return { border-left-color: #8b5cf6; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-secondary);
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.3; }
+    .empty-state h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem; color: var(--text-primary); }
+    .empty-state p { margin: 0; font-size: 0.875rem; }
+  </style>
 <base target="_blank">
 </head>
 <body>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading Inventory...</p>
+  </div>
+
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="dashboard-container">
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div style="padding: 24px;">
-            <h2 style="color: #fff; font-size: 22px; font-weight: 700;"><i class="fas fa-cloud" style="color: #3b82f6; margin-right: 8px;"></i>CloudPOS</h2>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fas fa-store"></i></div>
+        <span class="sidebar-brand">CloudPOS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Main</div>
+          <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+          <a href="pos.html" class="nav-item"><i class="fas fa-cash-register"></i><span>POS</span></a>
+          <a href="sales.html" class="nav-item"><i class="fas fa-receipt"></i><span>Sales</span></a>
         </div>
-        <nav>
-            <a href="dashboard.html" class="sidebar-link"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="pos.html" class="sidebar-link"><i class="fas fa-cash-register"></i> POS</a>
-            <a href="sales.html" class="sidebar-link"><i class="fas fa-receipt"></i> Sales</a>
-            <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i> Products</a>
-            <a href="inventory.html" class="sidebar-link active"><i class="fas fa-warehouse"></i> Inventory</a>
-            <a href="purchase-orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i> Purchase Orders</a>
-            <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i> Customers</a>
-            <a href="suppliers.html" class="sidebar-link"><i class="fas fa-truck"></i> Suppliers</a>
-            <a href="expenses.html" class="sidebar-link"><i class="fas fa-wallet"></i> Expenses</a>
-            <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i> Reports</a>
-            <a href="users.html" class="sidebar-link"><i class="fas fa-user-cog"></i> Users</a>
-            <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
-        </nav>
-        <div style="position: absolute; bottom: 0; width: 100%; padding: 20px; border-top: 1px solid #334155;">
-            <a href="#" onclick="logout()" class="sidebar-link" style="padding: 10px 24px;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Inventory</div>
+          <a href="products.html" class="nav-item"><i class="fas fa-box"></i><span>Products</span></a>
+          <a href="inventory.html" class="nav-item active"><i class="fas fa-warehouse"></i><span>Inventory</span></a>
+          <a href="purchase-orders.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>Purchase Orders</span></a>
         </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">People</div>
+          <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>Customers</span></a>
+          <a href="suppliers.html" class="nav-item"><i class="fas fa-truck"></i><span>Suppliers</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Finance</div>
+          <a href="expenses.html" class="nav-item"><i class="fas fa-wallet"></i><span>Expenses</span></a>
+          <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a href="users.html" class="nav-item"><i class="fas fa-user-shield"></i><span>Users</span></a>
+          <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" onclick="logout()">
+          <div class="user-avatar"><i class="fas fa-user"></i></div>
+          <div class="user-info">
+            <div class="user-name" data-user-name>Loading...</div>
+            <div class="user-role" data-user-role>Loading...</div>
+          </div>
+          <i class="fas fa-sign-out-alt" style="color: var(--text-secondary);"></i>
+        </div>
+      </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <div>
-                <h1 style="font-size: 28px; font-weight: 700; color: #111827;">Inventory</h1>
-                <p style="color: #6b7280; margin-top: 4px;">Track stock levels, movements, and adjustments</p>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <button class="btn btn-ghost" onclick="exportInventory()"><i class="fas fa-download"></i> Export</button>
-                <button class="btn btn-primary" onclick="openStockModal()"><i class="fas fa-plus"></i> Stock Adjustment</button>
-            </div>
+      <div class="top-bar">
+        <div class="page-title">
+          <h1>Inventory</h1>
+          <p>Track stock levels, movements, and adjustments</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="export-btn" onclick="exportInventory()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+          <button class="btn btn-primary" onclick="openStockModal()">
+            <i class="fas fa-plus"></i> Stock Adjustment
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="inv-stats" id="invStats">
+        <div class="stat-card">
+          <div class="stat-icon products"><i class="fas fa-boxes"></i></div>
+          <div class="stat-info">
+            <h4>Total Products</h4>
+            <p class="stat-value" id="statTotalProducts">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon value"><i class="fas fa-peso-sign"></i></div>
+          <div class="stat-info">
+            <h4>Stock Value</h4>
+            <p class="stat-value" id="statStockValue">₱0.00</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon low"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="stat-info">
+            <h4>Low Stock</h4>
+            <p class="stat-value" id="statLowStock" style="color: var(--warning);">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon out"><i class="fas fa-times-circle"></i></div>
+          <div class="stat-info">
+            <h4>Out of Stock</h4>
+            <p class="stat-value" id="statOutStock" style="color: var(--danger);">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs Container -->
+      <div class="card" style="padding: 0;">
+        <div class="inv-tabs">
+          <button class="inv-tab-btn active" data-tab="stock" onclick="switchTab('stock')">Stock Levels</button>
+          <button class="inv-tab-btn" data-tab="movements" onclick="switchTab('movements')">Stock Movements</button>
+          <button class="inv-tab-btn" data-tab="alerts" onclick="switchTab('alerts')">Alerts</button>
         </div>
 
-        <!-- Stats Cards -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-            <div class="stat-card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <p style="color: #6b7280; font-size: 13px; font-weight: 500;">TOTAL PRODUCTS</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #111827; margin-top: 4px;" id="statTotalProducts">0</p>
-                    </div>
-                    <div style="background: #dbeafe; padding: 10px; border-radius: 10px;">
-                        <i class="fas fa-boxes" style="color: #3b82f6; font-size: 20px;"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <p style="color: #6b7280; font-size: 13px; font-weight: 500;">TOTAL STOCK VALUE</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #111827; margin-top: 4px;" id="statStockValue">₱0</p>
-                    </div>
-                    <div style="background: #d1fae5; padding: 10px; border-radius: 10px;">
-                        <i class="fas fa-peso-sign" style="color: #10b981; font-size: 20px;"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <p style="color: #6b7280; font-size: 13px; font-weight: 500;">LOW STOCK ITEMS</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #dc2626; margin-top: 4px;" id="statLowStock">0</p>
-                    </div>
-                    <div style="background: #fee2e2; padding: 10px; border-radius: 10px;">
-                        <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 20px;"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <p style="color: #6b7280; font-size: 13px; font-weight: 500;">OUT OF STOCK</p>
-                        <p style="font-size: 28px; font-weight: 700; color: #991b1b; margin-top: 4px;" id="statOutStock">0</p>
-                    </div>
-                    <div style="background: #fecaca; padding: 10px; border-radius: 10px;">
-                        <i class="fas fa-times-circle" style="color: #991b1b; font-size: 20px;"></i>
-                    </div>
-                </div>
-            </div>
+        <!-- Stock Levels Tab -->
+        <div id="tab-stock" class="tab-content">
+          <div class="filter-bar">
+            <input type="text" class="search-input" id="searchInventory" placeholder="Search product name or SKU..." oninput="filterInventory()">
+            <select id="categoryFilter" onchange="filterInventory()">
+              <option value="all">All Categories</option>
+            </select>
+            <select id="statusFilter" onchange="filterInventory()">
+              <option value="all">All Status</option>
+              <option value="in">In Stock</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out of Stock</option>
+            </select>
+            <button class="export-btn" style="margin-left: auto;" onclick="resetInventoryFilters()">
+              <i class="fas fa-undo"></i> Reset
+            </button>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th style="text-align: center;">Stock</th>
+                  <th style="text-align: center;">Min Level</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Unit Cost</th>
+                  <th style="text-align: right;">Stock Value</th>
+                  <th style="text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="stockPagination">
+            <div class="page-info" id="stockPageInfo">Showing 0 of 0 items</div>
+            <div class="page-buttons" id="stockPageButtons"></div>
+          </div>
         </div>
 
-        <!-- Tabs -->
-        <div style="background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px;">
-            <div style="display: flex; border-bottom: 1px solid #f3f4f6; padding: 0 20px;">
-                <button class="tab-btn active" data-tab="stock" onclick="switchTab('stock')">Stock Levels</button>
-                <button class="tab-btn" data-tab="movements" onclick="switchTab('movements')">Stock Movements</button>
-                <button class="tab-btn" data-tab="alerts" onclick="switchTab('alerts')">Alerts</button>
-            </div>
+        <!-- Stock Movements Tab -->
+        <div id="tab-movements" class="tab-content" style="display: none;">
+          <div class="filter-bar">
+            <input type="text" class="search-input" id="searchMovements" placeholder="Search product or reference..." oninput="filterMovements()">
+            <select id="movementTypeFilter" onchange="filterMovements()">
+              <option value="all">All Types</option>
+              <option value="in">Stock In</option>
+              <option value="out">Stock Out</option>
+              <option value="sale">Sale</option>
+              <option value="adjustment">Adjustment</option>
+              <option value="return">Return</option>
+            </select>
+            <input type="date" id="movementDateFrom" onchange="filterMovements()">
+            <input type="date" id="movementDateTo" onchange="filterMovements()">
+            <button class="export-btn" style="margin-left: auto;" onclick="resetMovementFilters()">
+              <i class="fas fa-undo"></i> Reset
+            </button>
+          </div>
 
-            <!-- Stock Levels Tab -->
-            <div id="tab-stock" class="tab-content" style="padding: 20px;">
-                <!-- Filters -->
-                <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search product name or SKU..." oninput="filterInventory()">
-                    <select class="form-select" id="categoryFilter" style="width: 160px;" onchange="filterInventory()">
-                        <option value="">All Categories</option>
-                    </select>
-                    <select class="form-select" id="statusFilter" style="width: 160px;" onchange="filterInventory()">
-                        <option value="">All Status</option>
-                        <option value="in">In Stock</option>
-                        <option value="low">Low Stock</option>
-                        <option value="out">Out of Stock</option>
-                    </select>
-                    <button class="btn btn-ghost" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset</button>
-                </div>
-
-                <!-- Table -->
-                <div style="overflow-x: auto;">
-                    <table class="table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>SKU</th>
-                                <th>Category</th>
-                                <th style="text-align: center;">Stock</th>
-                                <th style="text-align: center;">Min Level</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Unit Cost</th>
-                                <th style="text-align: right;">Stock Value</th>
-                                <th style="text-align: center;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTableBody"></tbody>
-                    </table>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f3f4f6;">
-                    <p style="color: #6b7280; font-size: 14px;" id="showingText">Showing 0 of 0 items</p>
-                    <div class="pagination" id="pagination"></div>
-                </div>
-            </div>
-
-            <!-- Stock Movements Tab -->
-            <div id="tab-movements" class="tab-content" style="padding: 20px; display: none;">
-                <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <input type="text" class="search-input" id="movementSearch" placeholder="Search product or reference..." oninput="filterMovements()">
-                    <select class="form-select" id="movementTypeFilter" style="width: 160px;" onchange="filterMovements()">
-                        <option value="">All Types</option>
-                        <option value="in">Stock In</option>
-                        <option value="out">Stock Out</option>
-                        <option value="sale">Sale</option>
-                        <option value="adjustment">Adjustment</option>
-                        <option value="return">Return</option>
-                    </select>
-                    <input type="date" class="form-input" id="movementDateFrom" style="width: 150px;" onchange="filterMovements()">
-                    <input type="date" class="form-input" id="movementDateTo" style="width: 150px;" onchange="filterMovements()">
-                    <button class="btn btn-ghost" onclick="resetMovementFilters()"><i class="fas fa-undo"></i> Reset</button>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table class="table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Product</th>
-                                <th>Type</th>
-                                <th style="text-align: center;">Qty</th>
-                                <th style="text-align: center;">Before</th>
-                                <th style="text-align: center;">After</th>
-                                <th>Reference</th>
-                                <th>By</th>
-                            </tr>
-                        </thead>
-                        <tbody id="movementsTableBody"></tbody>
-                    </table>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f3f4f6;">
-                    <p style="color: #6b7280; font-size: 14px;" id="movementShowingText">Showing 0 of 0 items</p>
-                    <div class="pagination" id="movementPagination"></div>
-                </div>
-            </div>
-
-            <!-- Alerts Tab -->
-            <div id="tab-alerts" class="tab-content" style="padding: 20px; display: none;">
-                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                    <select class="form-select" id="alertTypeFilter" style="width: 200px;" onchange="filterAlerts()">
-                        <option value="">All Alerts</option>
-                        <option value="low">Low Stock</option>
-                        <option value="out">Out of Stock</option>
-                    </select>
-                    <button class="btn btn-ghost" onclick="markAllRead()">Mark All as Read</button>
-                </div>
-                <div id="alertsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
+          <div style="overflow-x: auto;">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Product</th>
+                  <th>Type</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: center;">Before</th>
+                  <th style="text-align: center;">After</th>
+                  <th>Reference</th>
+                  <th>By</th>
+                </tr>
+              </thead>
+              <tbody id="movementsTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="movementPagination">
+            <div class="page-info" id="movementPageInfo">Showing 0 of 0 items</div>
+            <div class="page-buttons" id="movementPageButtons"></div>
+          </div>
         </div>
+
+        <!-- Alerts Tab -->
+        <div id="tab-alerts" class="tab-content" style="display: none; padding: 1.5rem;">
+          <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+            <select id="alertTypeFilter" onchange="filterAlerts()">
+              <option value="all">All Alerts</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out of Stock</option>
+            </select>
+            <button class="export-btn" onclick="markAllAlertsRead()">
+              <i class="fas fa-check-double"></i> Mark All Read
+            </button>
+          </div>
+          <div id="alertsContainer"></div>
+        </div>
+      </div>
     </main>
+  </div>
 
-    <!-- Stock Adjustment Modal -->
-    <div class="modal-overlay" id="stockModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 style="font-size: 18px; font-weight: 600;">Stock Adjustment</h3>
-                <button onclick="closeStockModal()" style="background: none; border: none; cursor: pointer; font-size: 20px; color: #9ca3af;"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Product *</label>
-                    <select class="form-select" id="adjustProduct" onchange="onProductSelect()">
-                        <option value="">Select a product</option>
-                    </select>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div class="form-group">
-                        <label class="form-label">Current Stock</label>
-                        <input type="number" class="form-input" id="adjustCurrentStock" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Min Stock Level</label>
-                        <input type="number" class="form-input" id="adjustMinStock" readonly>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Adjustment Type *</label>
-                    <select class="form-select" id="adjustType">
-                        <option value="in">Stock In (Add)</option>
-                        <option value="out">Stock Out (Remove)</option>
-                        <option value="adjustment">Adjustment (Set to)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Quantity *</label>
-                    <input type="number" class="form-input" id="adjustQty" min="1" placeholder="Enter quantity">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Unit Cost (₱)</label>
-                    <input type="number" class="form-input" id="adjustCost" step="0.01" placeholder="Optional — for stock in">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Reason / Notes</label>
-                    <textarea class="form-input" id="adjustNotes" rows="2" placeholder="e.g., Damaged goods, New shipment received..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeStockModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveAdjustment()">Save Adjustment</button>
-            </div>
+  <!-- Stock Adjustment Modal -->
+  <div id="stockModalOverlay">
+    <div id="stockModalBox">
+      <div class="stock-modal-header">
+        <h3><i class="fas fa-sliders-h"></i> Stock Adjustment</h3>
+        <button class="modal-close-btn" onclick="closeStockModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="stock-modal-body">
+        <div class="form-group">
+          <label>Product <span class="required">*</span></label>
+          <select id="adjustProduct" onchange="onAdjustProductChange()">
+            <option value="">Select a product</option>
+          </select>
         </div>
-    </div>
-
-    <!-- Product History Modal -->
-    <div class="modal-overlay" id="historyModal">
-        <div class="modal" style="max-width: 640px;">
-            <div class="modal-header">
-                <h3 style="font-size: 18px; font-weight: 600;" id="historyTitle">Stock History</h3>
-                <button onclick="closeHistoryModal()" style="background: none; border: none; cursor: pointer; font-size: 20px; color: #9ca3af;"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div id="historyContent"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeHistoryModal()">Close</button>
-            </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Current Stock</label>
+            <input type="number" id="adjustCurrentStock" readonly>
+          </div>
+          <div class="form-group">
+            <label>Min Stock Level</label>
+            <input type="number" id="adjustMinStock" readonly>
+          </div>
         </div>
+        <div class="form-group">
+          <label>Adjustment Type <span class="required">*</span></label>
+          <select id="adjustType">
+            <option value="in">Stock In (Add)</option>
+            <option value="out">Stock Out (Remove)</option>
+            <option value="adjustment">Adjustment (Set to)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity <span class="required">*</span></label>
+          <input type="number" id="adjustQty" min="1" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label>Unit Cost (₱)</label>
+          <input type="number" id="adjustCost" step="0.01" placeholder="Optional — for stock in">
+        </div>
+        <div class="form-group">
+          <label>Reason / Notes</label>
+          <textarea id="adjustNotes" rows="2" placeholder="e.g., Damaged goods, New shipment received..."></textarea>
+        </div>
+      </div>
+      <div class="stock-modal-footer">
+        <button class="btn-cancel-modal" onclick="closeStockModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn-save-modal" onclick="saveAdjustment()">
+          <i class="fas fa-check"></i> Save Adjustment
+        </button>
+      </div>
     </div>
+  </div>
 
-    <script src="js/api.js"></script>
-    <script src="js/inventory.js"></script>
+  <!-- History Modal -->
+  <div id="historyModalOverlay">
+    <div id="historyModalBox">
+      <div class="stock-modal-header">
+        <h3><i class="fas fa-history"></i> <span id="historyTitle">Stock History</span></h3>
+        <button class="modal-close-btn" onclick="closeHistoryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="stock-modal-body" id="historyBody"></div>
+      <div class="stock-modal-footer">
+        <button class="btn-cancel-modal" onclick="closeHistoryModal()">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/inventory.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loader = document.getElementById('loadingScreen');
+        if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 300); }
+      }, 500);
+    });
+  </script>
 </body>
 </html>
