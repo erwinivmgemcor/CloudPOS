@@ -1,6 +1,6 @@
 // ============================================
 // CloudPOS API Module
-// GET-ONLY approach to avoid CORS issues
+// Supports both GET (read) and POST (write)
 // ============================================
 
 const API_CONFIG = {
@@ -9,41 +9,59 @@ const API_CONFIG = {
 };
 
 /**
- * API call using GET only (avoids CORS preflight issues)
- * All data is sent as URL query parameters
+ * API call - uses GET for reads, POST for writes
  */
 async function apiCall(action, payload = {}) {
   const url = API_CONFIG.BASE_URL;
   
-  // Build URL with all parameters as query strings
-  const params = new URLSearchParams();
-  params.append('action', action);
-  
-  // Add all payload data as query parameters
-  for (const key in payload) {
-    if (payload[key] !== undefined && payload[key] !== null) {
-      // Handle arrays/objects by JSON stringifying
-      if (typeof payload[key] === 'object') {
-        params.append(key, JSON.stringify(payload[key]));
-      } else {
-        params.append(key, payload[key]);
-      }
-    }
-  }
-  
-  const fullUrl = `${url}?${params.toString()}`;
+  // List of read-only actions
+  const readActions = ['test', 'getDashboard', 'getProducts', 'getSales', 'getCustomers', 'getSuppliers', 'getExpenses', 'getReports', 'getInventory', 'getPurchaseOrders', 'getSettings', 'getUsers'];
+  const useGet = readActions.includes(action);
   
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+    let response;
     
-    const response = await fetch(fullUrl, {
-      method: 'GET',
-      redirect: 'follow',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
+    if (useGet) {
+      // GET request
+      const params = new URLSearchParams();
+      params.append('action', action);
+      for (const key in payload) {
+        if (payload[key] !== undefined && payload[key] !== null) {
+          if (typeof payload[key] === 'object') {
+            params.append(key, JSON.stringify(payload[key]));
+          } else {
+            params.append(key, payload[key]);
+          }
+        }
+      }
+      
+      response = await fetch(`${url}?${params.toString()}`, {
+        method: 'GET',
+        redirect: 'follow'
+      });
+    } else {
+      // POST request using no-cors mode for Google Apps Script
+      const formData = new URLSearchParams();
+      formData.append('action', action);
+      for (const key in payload) {
+        if (payload[key] !== undefined && payload[key] !== null) {
+          if (typeof payload[key] === 'object') {
+            formData.append(key, JSON.stringify(payload[key]));
+          } else {
+            formData.append(key, payload[key]);
+          }
+        }
+      }
+      
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        redirect: 'follow'
+      });
+    }
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -63,18 +81,4 @@ async function apiCall(action, payload = {}) {
   }
 }
 
-/**
- * Test API connection
- */
-async function testConnection() {
-  try {
-    const result = await apiCall('test');
-    console.log('✅ API Connection Test:', result);
-    return result;
-  } catch (error) {
-    console.error('❌ API Connection Failed:', error);
-    return { status: 'error', message: error.message };
-  }
-}
-
-export { apiCall, testConnection, API_CONFIG };
+export { apiCall, API_CONFIG };
