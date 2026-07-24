@@ -4,12 +4,13 @@
 // ============================================
 
 const API_CONFIG = {
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbwjOvj36F9bbQ7uq_eH7USRefl9ZOvdmiv1rdGeFcmO0AB0glui0Bnf3tg7cpeLdJeQ/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbxO-PIIjzEEq_RnHYi6mW1bYS2vJlyhVnE5C7nyfA6UiX3k9yYV34gVKTUANka8EIgGA/exec',
   TIMEOUT: 30000
 };
 
 /**
  * API call using GET only (avoids CORS preflight issues)
+ * All data is sent as URL query parameters
  */
 async function apiCall(action, payload = {}) {
   const url = API_CONFIG.BASE_URL;
