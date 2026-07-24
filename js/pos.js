@@ -415,6 +415,13 @@ async function completeSale() {
     btn.innerHTML = '<span class="spinner"></span> Processing...';
     
     const response = await apiCall('saveSale', saleData);
+    // After saving the sale successfully:
+if (typeof recordSaleMovement === 'function') {
+    recordSaleMovement(saleData);
+} else {
+    // Fallback if inventory.js isn't loaded on POS page
+    recordSaleMovementFallback(saleData);
+}
     
     if (response.status === 'success') {
       showToast('Sale completed successfully!', 'success');
